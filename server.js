@@ -27,6 +27,8 @@ app.use(
   }),
 );
 
+connectDb()
+
 //routes
 import authRoutes from "./routes/auth.route.js";
 import projectRoutes from "./routes/project.route.js";
@@ -43,7 +45,7 @@ app.use('/api', aiRoutes)
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    connectDb()
+    
     console.log(`server running on http://localhost:${PORT}`);
   });
 }

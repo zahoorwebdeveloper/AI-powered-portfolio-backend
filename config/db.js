@@ -1,20 +1,19 @@
-// import { Pool } from 'pg'
+import mongoose from "mongoose";
 
-// export const pool = new Pool({
-//     connectionString: process.env.DATABASE_URL,
-//     ssl: {
-//     rejectUnauthorized: false 
-//   }
-// });
-import mongoose from 'mongoose'
+let isConnected = false;
 
-const connectDb = async ()=>{
-    try {
-        await mongoose.connect(process.env.MONGO_URL)
-        console.log("mongodb connected successfully")
-    } catch (error) {
-        console.log("database error", error)
-    }
-}
+const connectDb = async () => {
+  if (isConnected) return;
 
-export default connectDb
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+
+    isConnected = true;
+    console.log("MongoDB connected successfully");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    throw error;
+  }
+};
+
+export default connectDb;

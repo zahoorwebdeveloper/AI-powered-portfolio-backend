@@ -19,6 +19,8 @@ app.use(
       "https://www.zahoorwebdev.org",
       "https://zahoorwebdev.org",
       "https://zahoorwebdev.org/",
+      "https://ai-powered-portfolio-frontend-ro1k3lj5l-zahoor.vercel.app/",
+      "https://ai-powered-portfolio-frontend-ro1k3lj5l-zahoor.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,

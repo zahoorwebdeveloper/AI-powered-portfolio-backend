@@ -2,6 +2,7 @@ import NodeCache from "node-cache";
 import Project from "../models/project.model.js";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 // get projects
 export const getProjects = async (req, res) => {
@@ -13,88 +14,149 @@ export const getProjects = async (req, res) => {
   }
 };
 
-// add projects
+
 export const addProjects = async (req, res) => {
-  const { title, description, tech, live, github } = req.body;
   try {
-    if (!req.file) {
+    const { title, description, tech, live, github } = req.body;
+
+    // Validate required fields
+    if (!title || !description) {
       return res.status(400).json({
-        error: "Image is required",
+        success: false,
+        message: "Title and description are required.",
       });
     }
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "portfolio",
-    });
+
+    // Validate image
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Project image is required.",
+      });
+    }
+
+    // Upload image to Cloudinary
+    const uploadedImage = await uploadToCloudinary(req.file.buffer);
+
+    let technologies = tech;
+
+    if (typeof tech === "string") {
+      try {
+        technologies = JSON.parse(tech);
+      } catch {
+        technologies = tech
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
 
     const project = await Project.create({
-      title,
-      description,
-      tech,
-      live,
-      github,
+      title: title.trim(),
+      description: description.trim(),
+      tech: technologies,
+      live: live?.trim() || "",
+      github: github?.trim() || "",
       image: {
-        url: result.secure_url,
-        publicId: result.public_id,
+        url: uploadedImage.secure_url,
+        publicId: uploadedImage.public_id,
       },
     });
+
     return res.status(201).json({
-      message: "Project created successfully",
+      success: true,
+      message: "Project created successfully.",
       project,
     });
-  } catch (err) {
-    console.log("add project error", err);
-    res.status(500).json({ error: err.message });
-  } finally {
-    if (req.file?.path) {
-      fs.unlink(req.file.path, () => {});
-    }
+  } catch (error) {
+    console.error("Add Project Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create project.",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
+    });
   }
 };
 
 // update projects
+
 export const updateProjects = async (req, res) => {
-  const { id } = req.params;
-  const { title, description, tech, live, github } = req.body;
   try {
+    const { id } = req.params;
+    const { title, description, tech, live, github } = req.body;
+
+    // Find project
     const project = await Project.findById(id);
 
     if (!project) {
       return res.status(404).json({
-        error: "Project not found",
+        success: false,
+        message: "Project not found.",
       });
     }
 
-    project.title = title ?? project.title;
-    project.description = description ?? project.description;
-    project.tech = tech ?? project.tech;
-    project.live = live ?? project.live;
-    project.github = github ?? project.github;
+    // Update basic fields
+    if (title !== undefined) project.title = title.trim();
+    if (description !== undefined)
+      project.description = description.trim();
+
+    if (live !== undefined) project.live = live.trim();
+    if (github !== undefined) project.github = github.trim();
+
+    // Handle tech array
+    if (tech !== undefined) {
+      let technologies = tech;
+
+      if (typeof tech === "string") {
+        try {
+          technologies = JSON.parse(tech);
+        } catch {
+          technologies = tech
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
+        }
+      }
+
+      project.tech = technologies;
+    }
 
     if (req.file) {
       if (project.image?.publicId) {
         await cloudinary.uploader.destroy(project.image.publicId);
       }
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "portfolio",
-      });
+
+      // Upload new image
+      const uploadedImage = await uploadToCloudinary(req.file.buffer);
+
       project.image = {
-        url: result?.secure_url,
-        publicId: result?.public_id,
+        url: uploadedImage.secure_url,
+        publicId: uploadedImage.public_id,
       };
     }
 
     await project.save();
-    return res.json({
-      message: "Project updated successfully!",
+
+    return res.status(200).json({
+      success: true,
+      message: "Project updated successfully.",
       project,
     });
-  } catch (err) {
-    console.error("Update Error:", err.message);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    if (req.file?.path) {
-      fs.unlink(req.file.path, () => {});
-    }
+  } catch (error) {
+    console.error("Update Project Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update project.",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
+    });
   }
 };
 

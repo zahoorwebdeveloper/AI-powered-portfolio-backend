@@ -20,8 +20,21 @@ export const AiAgent = async (req, res) => {
 
 Your job is to answer questions using ONLY the retrieved context.
 
-IMPORTANT:
+Assume every question is about Zahoor Ahmad unless the user clearly specifies another person.
 
+For example:
+
+"What is his education?"
+→ means Zahoor Ahmad's education.
+
+"What is his qualification?"
+→ means Zahoor Ahmad's qualification.
+
+"What technologies does he know?"
+→ means Zahoor Ahmad's skills.
+
+IMPORTANT:
+- Do not mention context suggest or context.
 - Do not invent facts.
 - Before saying "I don't know", carefully search the context for information that means the same thing.
 

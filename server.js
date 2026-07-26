@@ -13,15 +13,12 @@ app.use(compression());
 app.use(
   cors({
     origin: [
-      "https://portfolio-zahoor.vercel.app",
-      "https://portfolio-git-main-zahoor.vercel.app/",
-      "https://portfolio-h1n9jk0nl-zahoor.vercel.app/",
+      "https://ai-powered-portfolio-frontend.vercel.app/",
+      "https://ai-powered-portfolio-frontend.vercel.app",
       "https://www.zahoorwebdev.org/",
       "https://www.zahoorwebdev.org",
       "https://zahoorwebdev.org",
       "https://zahoorwebdev.org/",
-      "http://localhost:5173",
-      "http://localhost:5173/",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,

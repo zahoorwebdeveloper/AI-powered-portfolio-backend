@@ -12,6 +12,7 @@ pnpm-lock.yaml
 .env.development.local
 .env.test.local
 .env.production.local
+atlas-credentials.env
 
 # --- Logs ---
 # Keeps local server logs out of the repo
